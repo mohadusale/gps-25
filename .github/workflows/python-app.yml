@@ -1,0 +1,42 @@
+name: Python application
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Obtener el código del repositorio
+    - uses: actions/checkout@v3
+
+    # 2. Configurar la imagen Docker de Python (según las instrucciones)
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+
+    # 3. Instalar requerimientos (pylint y coverage son necesarios para los pasos siguientes)
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pylint coverage
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    # 4. Pasar analizador de código estático (Pylint)
+    - name: Analitzador de codi static (pylint)
+      run: |
+        # Analiza todos los archivos .py. Puede que necesites ajustar el umbral de fallo.
+        pylint *.py --fail-under=5.0 || true 
+
+    # 5. Ejecutar el test y su coverage
+    - name: Executar tests i coverage
+      run: |
+        # Ejecuta los tests usando coverage
+        coverage run test.py
+        # Muestra el reporte de cobertura en consola
+        coverage report
